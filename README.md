@@ -19,6 +19,7 @@ A Fleet Management System built using React.js, Node.js, Express.js, and Postgre
 - View vehicle maintenance records and service costs.
 - Retrieve individual table data using REST APIs.
 - Retrieve related trip information using SQL JOIN queries.
+- View live analytics for customer trips, unique drivers, trip and vehicle statuses, and maintenance expenses.
 - Display data in tables in the React frontend.
 - Handle API loading states and errors.
 
@@ -106,6 +107,11 @@ Open the local URL shown in the terminal, usually:
 | GET | `/api/trips` | Retrieve trip records |
 | GET | `/api/trips/details` | Retrieve joined trip details |
 | GET | `/api/maintenance` | Retrieve maintenance records |
+| GET | `/api/analytics/trips-by-customer` | Count trips for each customer |
+| GET | `/api/analytics/drivers-by-customer` | Count unique trip drivers for each customer |
+| GET | `/api/analytics/trips-by-status` | Count trips grouped by status |
+| GET | `/api/analytics/vehicles-by-status` | Count vehicles grouped by status |
+| GET | `/api/analytics/maintenance-expenses` | Sum maintenance costs by vehicle registration |
 
 ## Project Objective
 

@@ -109,6 +109,102 @@ app.get("/api/trips/details", async (req, res) => {
   }
 });
 
+app.get("/api/analytics/trips-by-customer", async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT
+        c.customer_id,
+        c.name AS customer_name,
+        COUNT(t.trip_id)::int AS trip_count
+      FROM customers c
+      LEFT JOIN trips t ON t.customer_id = c.customer_id
+      GROUP BY c.customer_id, c.name
+      ORDER BY trip_count DESC, c.name
+    `);
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error("Error fetching trips by customer:", error.message);
+    res.status(500).json({ error: "Failed to fetch trips by customer" });
+  }
+});
+
+app.get("/api/analytics/drivers-by-customer", async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT
+        c.customer_id,
+        c.name AS customer_name,
+        COUNT(DISTINCT t.driver_id)::int AS driver_count
+      FROM customers c
+      LEFT JOIN trips t ON t.customer_id = c.customer_id
+      GROUP BY c.customer_id, c.name
+      ORDER BY driver_count DESC, c.name
+    `);
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error("Error fetching drivers by customer:", error.message);
+    res.status(500).json({ error: "Failed to fetch drivers by customer" });
+  }
+});
+
+app.get("/api/analytics/trips-by-status", async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT
+        COALESCE(status, 'Unknown') AS status,
+        COUNT(*)::int AS trip_count
+      FROM trips
+      GROUP BY status
+      ORDER BY trip_count DESC, status
+    `);
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error("Error fetching trips by status:", error.message);
+    res.status(500).json({ error: "Failed to fetch trips by status" });
+  }
+});
+
+app.get("/api/analytics/vehicles-by-status", async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT
+        COALESCE(status, 'Unknown') AS status,
+        COUNT(*)::int AS vehicle_count
+      FROM vehicles
+      GROUP BY status
+      ORDER BY vehicle_count DESC, status
+    `);
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error("Error fetching vehicles by status:", error.message);
+    res.status(500).json({ error: "Failed to fetch vehicles by status" });
+  }
+});
+
+app.get("/api/analytics/maintenance-expenses", async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT
+        v.vehicle_id,
+        v.registration_number,
+        COALESCE(SUM(m.cost), 0) AS total_cost
+      FROM vehicles v
+      LEFT JOIN maintenance m ON m.vehicle_id = v.vehicle_id
+      GROUP BY v.vehicle_id, v.registration_number
+      ORDER BY total_cost DESC, v.registration_number
+    `);
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error("Error fetching maintenance expenses:", error.message);
+    res.status(500).json({ error: "Failed to fetch maintenance expenses" });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });

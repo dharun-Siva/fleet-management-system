@@ -1,8 +1,11 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import "./App.css";
+
+const AnalyticsDashboard = lazy(() => import("./AnalyticsDashboard.jsx"));
 
 const navigationItems = [
   { id: "dashboard", label: "Dashboard", mark: "D" },
+  { id: "analytics", label: "Analytics", mark: "A" },
   { id: "vehicles", label: "Vehicles", mark: "V" },
   { id: "drivers", label: "Drivers", mark: "DR" },
   { id: "customers", label: "Customers", mark: "C" },
@@ -103,6 +106,7 @@ function App() {
   });
   const [errors, setErrors] = useState({});
   const [activeSection, setActiveSection] = useState("dashboard");
+  const [analyticsRefreshKey, setAnalyticsRefreshKey] = useState(0);
   const [vehicleSearch, setVehicleSearch] = useState("");
   const [driverSearch, setDriverSearch] = useState("");
   const [customerSearch, setCustomerSearch] = useState("");
@@ -232,7 +236,12 @@ function App() {
               className={`nav-link ${activeSection === item.id ? "is-active" : ""}`}
               href={`#${item.id}`}
               key={item.id}
-              onClick={() => setActiveSection(item.id)}
+              onClick={() => {
+                setActiveSection(item.id);
+                if (item.id === "analytics") {
+                  setAnalyticsRefreshKey((currentKey) => currentKey + 1);
+                }
+              }}
             >
               <span className="nav-mark" aria-hidden="true">
                 {item.mark}
@@ -287,6 +296,27 @@ function App() {
           </section>
 
           <div className="data-sections">
+            <section className="analytics-section" id="analytics">
+              {activeSection === "analytics" ? (
+                <Suspense
+                  fallback={
+                    <p className="analytics-message" role="status">
+                      Loading analytics dashboard...
+                    </p>
+                  }
+                >
+                  <AnalyticsDashboard refreshKey={analyticsRefreshKey} />
+                </Suspense>
+              ) : (
+                <div className="analytics-section-heading">
+                  <div>
+                    <p className="eyebrow">FLEET INSIGHTS</p>
+                    <h2>Analytics Dashboard</h2>
+                    <p>Select Analytics to load the latest PostgreSQL records.</p>
+                  </div>
+                </div>
+              )}
+            </section>
             <TableSection
               id="vehicles"
               title="Vehicles"
